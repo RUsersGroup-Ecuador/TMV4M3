@@ -1,0 +1,94 @@
+---
+title: "Relación entre el PIB per cápita y el Índice de Desarrollo Humano (IDH) en Ecuador"
+author: "JMOH"
+date: "18 de octubre de 2018"
+output: html_document
+---
+
+##Introducción
+
+El Producto Interno Bruto per cápita (*PIB pc*) representa el valor de todos los bienes y servicios
+finales generados en un país durante un año dado, el cual le correspondería a cada habitante si dicha riqueza se repartiera a todos por igual. Se interpreta como una medida aproximada del bienestar material de la población. Sin embrago, este indicador como medida de bienestar ha recibido críticas ya que no considera las desigualdades de la renta, incluso Simon Kuznets (1901-1985), creador del sistema estadounidense unificado de contabilidad nacional, y desarrollador de la metodologia para calcular el PIB advertia que *"es muy difícil deducir el bienestar de una nación a partir de su renta nacional (per cápita)".* 
+
+###El IDH como indicador de bienestar 
+
+En este sentido, se han desarrollado índices o medidas alternativas de la Renta Nacional que contabilizan de alguna manera los factores no englobados en el PIB y en el PIBpc, entre ellos, el Índice de desarrollo humano (IDH). Dicho indicador fue elaborado por el Programa de las Naciones Unidas para el Desarrollo (PNUD) y mide el progreso conseguido por un país en tres dimensiones básicas del desarrollo humano: disfrutar de una vida larga y saludable, acceso a educación y nivel de vida digno.
+
+```{r include=FALSE}
+library(tidyverse)
+library(PASWR)
+library(highcharter)
+library(knitr)
+```
+
+```{r include=FALSE}
+Anio <- c(1990:2017)
+PIB_per_capita <- c(3021.51273, 3078.00744, 3071.25114, 3061.63488, 
+                    3122.08088, 3124.29192, 3112.31886, 3181.25478, 
+                    3220.65245, 3009.91137, 2987.37959, 3053.14798, 
+                    3124.90870, 3157.45085, 3361.05821, 3480.77961, 
+                    3573.63068, 3590.71809, 3754.98704, 3713.61451, 
+                    3781.86993, 4014.20827, 4174.04845, 4312.86437, 
+                    4408.27946, 4346.69706, 4215.32935, 4279.08834
+)
+IDH <- c(0.643, 0.646, 0.650, 0.654, 0.658, 0.662, 0.664, 0.668, 
+         0.671, 0.668, 0.670, 0.675, 0.679, 0.682, 0.688, 0.693,
+         0.696, 0.698, 0.711, 0.712, 0.715, 0.721, 0.726, 0.734,
+         0.742, 0.743, 0.749, 0.752
+)
+```
+
+```{r include=FALSE}
+IDH_PIB <- data.frame(Anio, PIB_per_capita, IDH)
+```
+
+###El PIB per cápita y el IDH en Ecuador 
+
+En la *Tabla 1* se presenta la evolución del PIB per cápita y el IDH en Ecuador para el periodo comprendido entre los años 1990 y 2017 (28 observaciones), datos con los que se elaborará un modelo de regresión lineal simple en base al *PIB pc* como variable explicatoria para entender su relación con el IDH.  
+
+```{r echo=FALSE}
+kable(IDH_PIB, 
+      col.names = c("Año", "PIB per cápita (precios constantes)", "IDH"),
+      align = "c",
+      caption = "Tabla 1: PIB per cápita e IDH en Ecuador (1990-2017)"
+      )
+```
+
+####Análisis gráfico de datos
+
+Como se puede observar en el *Gráfico 1*, existe una correlación positiva entre el PIB per cápita y el IDH. 
+
+```{r echo=FALSE}
+graf1 <- ggplot(IDH_PIB, 
+                aes(x= PIB_per_capita, y= IDH)) + 
+                  geom_point(colour= "blue") +
+                  ggtitle("Gráfico 1: Diagrama de Dispersión")
+                
+graf1
+```
+
+####Modelo de regresión lineal 
+
+El siguiente modelo describe la relación entre el Índice de Desarrollo Humano y el PIB per cápita. Se construyó en base a 28 observaciones (1990 - 2017) obtenidas del Human Development Data y el Banco Mundial.
+
+```{r echo=FALSE}
+reglin <- lm(IDH ~ PIB_per_capita, data = IDH_PIB)
+summary(reglin)
+```
+
+El modelo obtenido es el siguiente:
+
+  **Y = 0.4635 + 0.065(PIBpercápita)**;
+
+es decir, por cada dólar en que se incrementa el PIB per capita, el IDH aumenta en 0.065.
+
+Se puede ver que el coeficiente de determinación R2 Ajustado es 0.92 lo cual indica que el modelo explica el 92% de la varianza de la variable IDH, traduciéndose en un buen ajuste.
+
+```{r echo=FALSE}
+graf1 + geom_smooth(method = "lm", se = FALSE, 
+                    colour= "red",
+                    size= 0.2) +
+        ggtitle("Gráfico 2: Regresión entre el IDH y el PIB per cápita (1990-2017)")
+```
+
+
