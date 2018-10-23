@@ -1,0 +1,127 @@
+ANÁLISIS DE RENDIMIENTO ACADÉMICO DE LA MATERIA DE MATEMÁTICAS
+========================================================
+author: Tania Gualli
+date: 21 de octubre de 2018
+autosize: true
+
+Introducción
+========================================================
+
+
+El presente trabajo consiste en el análisis descriptivo y predictivo de una base de datos de un grupo de estudiantes en su clase de Matemática. 
+
+Se requiere predecir la calificación final, que está representada por la variable “G3”. 
+
+Se cuenta con varios atributos económicos y sociales que se usarán como predictores. 
+
+Datos descriptivos - Nota Final por Sexo
+========================================================
+
+```{r data_estudiantes, echo=FALSE, warning=FALSE, message=FALSE}
+#librerías
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+
+#Importar la base de datos
+setwd("E:/Tania/Cursos/R - RUGE/Proyecto Final")
+
+data_estudiantes <- read.csv("00 Data//student_mat.csv", stringsAsFactors= FALSE)
+
+#compruebo
+#str(data_estudiantes)
+#View(data_estudiantes)
+
+data_estudiantes <- tbl_df(data_estudiantes)
+#data_estudiantes
+
+
+#limpio datos
+data_estudiantes=data_estudiantes %>% filter( G3!=0 ) #eilimino notas 0
+
+#Estadísticos nota final
+
+#ejecuto script que tiene la función EDA
+#source("01 Scripts/FuncionEda.R")
+#EDA2(data_estudiantes$G3)
+
+#gráfico 1-Boxplot para Nota Final por Sexo
+ggplot(data_estudiantes,aes(sex,G3)) + 
+  geom_boxplot(aes(fill=sex))
+
+#gráfico 2-Histograma para Nota Final por Sexo
+ggplot(data = data_estudiantes, aes(x= G3, fill= sex)) + 
+  geom_histogram( aes(y= ..count..)) +
+  labs(title= 'Histograma para Nota Final por Sexo', y= "Cantidad", x= "Nota Final")
+
+```
+Datos descriptivos - Matrículas previas vs Nota Final
+========================================================
+
+```{r data_estudiantes1, echo=FALSE, warning=FALSE, message=FALSE}
+#gráfico 3- Matrículas previas vs Nota Final
+ggplot(data_estudiantes,aes(failures,G3)) + 
+  geom_boxplot(aes(fill=failures))+
+  xlab("Matrículas previas")+
+  ylab("Nota Final")+
+  ggtitle("Matrículas previas vs Nota Final")+ geom_point()
+
+```
+
+Datos descriptivos - Nota Final vs ausencias
+========================================================
+
+```{r data_estudiantes2, echo=FALSE, warning=FALSE, message=FALSE}
+qplot(G3, absences, data = data_estudiantes)+
+  xlab("Nota Final")+
+  ylab("Ausencias")+
+  ggtitle("Nota Final vs ausencias")+ geom_point()
+
+```
+Conclusiones
+========================================================
+
+Este análisis se realiza sobre una base que recoge la tasa de rendimiento de un examen rendido por 395 estudiantes. El examen fue evaluado sobre un total de 20 puntos.
+
+Se detectaron 38 estudiantes con calificación de 0, que correspondió a aquellos que no se presentaron al examen, razón por la que se les asignó esa calificación. Se eliminó este grupo,luego de lo cual se realizó el análisis correspondiente y se obtuvieron los resultados que se indican a continuación:
+- La tasa de rendimiento promedio en la materia de Matemática es de 11.52; y en promedio, la tasa de rendimiento de los estudiantes difieren frente a la media en 3.23 puntos, lo cual nos da un indicio de que existe una considerable variabilidad entre cada estudiante.
+
+Conclusiones
+========================================================
+
+- El estudiante con la tasa más alta de rendimiento es de 20,0, mientras que el estudiante con la tasa más baja es de 4.0. La diferencia entre la tasa más baja y más alta es 16 puntos, lo cual confirma que existe una alta heterogeneidad entre los estudiantes y que las tasas varían mucho de un estudiante a otro. 
+- El 25% de los estudiantes tienen una tasa de hasta 9 puntos (Q1), el 50% de los estudiantes, tienen una tasa de rendimiento de hasta 11 puntos (mediana); mientras que el 75% de los estudiantes tienen una tasa de rendimiento de hasta 14 puntos. 
+- Apenas un 25% del total de estudiantes aprueba el examen.
+
+En el siguiente estudio se identifican los factores socioeconómicos que afectan al rendimiento académicos de estos estudiantes.
+
+Modelo Predictivo
+========================================================
+```{r data_estudiantes3, echo=FALSE, warning=FALSE, message=FALSE}
+set.seed(101)
+sample <- sample.int(n = nrow(data_estudiantes), size = floor(.75*nrow(data_estudiantes)), replace = F)
+train <- data_estudiantes[sample, ]
+test  <- data_estudiantes[-sample, ]
+
+#str(train)
+#str(test)
+
+#l.	Utilizando la base de datos train, se estima un modelo de regresión múltiple para 
+#explicar G3 (Nota Final). Se verifica que el modelo propuesto tenga coeficientes estadísticamente 
+#significativos de forma individual (prueba t) y global (prueba F).
+
+lm.fit=lm(G3~., data=train)
+#summary(lm.fit)
+
+#las variables 
+lm.fit=lm(G3~failures+goout+schoolsup, data=train)
+#summary(lm.fit)
+
+#n.	Utilizando el modelo de regresión lineal múltiple se realiza 
+#una predicción utilizando la base de datos test.
+
+hist(predict(lm.fit , data.frame(test)))
+
+```
