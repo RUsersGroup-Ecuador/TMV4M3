@@ -1,0 +1,73 @@
+---
+title: "INFORME_VENTAS"
+author: "TYPC"
+date: "25 de octubre de 2018"
+output: html_document
+---
+
+## R Markdown
+
+Este estudio analiza las ventas de 800 empresas del año 2017. Las compras de las empresas son significativas en diferentes componentes, sin embargo, las ventas en los últimos años han disminuido por lo que existe preocupación de las empresas por las compras de sus mejores clientes y necesitan priorizarlos.
+
+```{r}
+library(readxl)
+library(openxlsx)
+library(MASS)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(readr)
+library(ggplot2)
+library(hexbin)
+library(lubridate)
+library(GGally)
+library(modelr)
+library(lmtest)
+library(carData)
+library(car)
+library(sandwich)
+library(boot)
+library(leaps)
+library(caret)
+library(glmnet)
+library(broom)
+library(sigr)
+library(vtreat)
+
+
+data1<-read_xlsx('~/05 R/PROYECTO2/01 Data/VENTAS.xlsx')
+#realizar una regresion lineal
+mod_1 <- lm(VENTAS ~ COMPRAS, data=data1)
+summary(mod_1)
+
+################################### PRUEBA DE NORMALIDAD #####################
+## Agregar residuales a datos
+data1 <- data1 %>% 
+  add_residuals(mod_1, var = 'RESIDUALES')
+# Prueba de normalidad - Test KS
+ks.test(data1$RESIDUALES, "pnorm")
+
+
+################################## Análisis de los residuos: Homocedasticidad #################
+## Explorar la varianza
+ggplot(data1, aes(COMPRAS, RESIDUALES)) + 
+  geom_ref_line(h = 0) +
+  geom_point() + 
+  ggtitle("Residuos")
+
+
+##hchart(data1, "scatter", hcaes(x = COMPRAS, y = RESIDUALES))
+################################## Análisis de los residuos: Autocorrelación #################
+## Prueba de homocedasticidad
+bptest( mod_1)
+
+## Grafico ACF
+acf( residuals( mod_1))
+
+## Test de Durbin–Watson    
+dwtest( mod_1, alternative = 'two.sided')
+
+library(DT)
+datatable(data1)
+
+```
