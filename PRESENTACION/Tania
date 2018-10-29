@@ -38,6 +38,7 @@ data_estudiantes <- tbl_df(data_estudiantes)
 #data_estudiantes
 
 
+
 #limpio datos
 data_estudiantes=data_estudiantes %>% filter( G3!=0 ) #eilimino notas 0
 
