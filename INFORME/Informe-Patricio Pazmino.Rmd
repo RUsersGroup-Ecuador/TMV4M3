@@ -1,0 +1,55 @@
+---
+title: "Precio de las viviendas en Boston"
+author: "Patricio Pazmiño"
+date: "10/21/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducción
+
+Se trabaja con una base de datos que recoge informacioón sobre el mercado inmobiliario de Boston y también sobre las caracteriísticas demográficas de diferentes barrios de la ciudad. En total, son 14 variables y lo que buscamos es generar una regresión lineal que permita entender cuales son las variables que determinan los precios en las viviendas de Boston y construir un modelo que permita predecir estos valores.
+
+En primer lugar, cargamos los paquetes que permitiran trabajar adecuadamente con la base de datos:
+
+```{r warning=FALSE}
+library(aod)
+library(MASS)
+data("Boston")
+```
+
+## Modelamiento
+
+Empezamos revisando las variables. Encontramos que la variable "chas" es categórica y debe ser cambiada a factor:
+
+```{r Boston}
+summary(Boston)
+class(Boston$chas)
+Boston$chas<-as.factor(Boston$chas)
+```
+
+Realizamos una primera regresion, utilizando todas las variables de la base de datos:
+```{r}
+mod_1<-lm(medv~.,Boston)
+summary(mod_1)
+```
+
+Observamos que las variables "indus" y "age", no son estadísticamente significativas dentro del modelo. Las excluimos para ver si el nuevo modelo se ajusta mejor:
+
+```{r}
+mod_2<-lm(medv~crim+zn+chas+nox+rm+dis+rad+tax+ptratio+black+lstat, Boston)
+summary(mod_2)
+```
+
+Efectivamente, vemos que el nuevo modelo es mejor ya que todos las variables explican el valor de las viviendas en Boston.
+
+##Graficos
+
+Incluimos algunos graficos para complementar el modelo:
+```{r}
+plot(mod_2)
+```
+
