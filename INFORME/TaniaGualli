@@ -117,3 +117,4 @@ lm.fit=lm(G3~failures+goout+schoolsup, data=train)
 
 hist(predict(lm.fit , data.frame(test)))
 ```
+
